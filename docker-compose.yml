@@ -1,0 +1,40 @@
+version: '3.9'
+
+services:
+  app:
+    build: .
+    ports:
+      - "5000:5000"  
+    depends_on:
+      - db
+      - ai-agent
+    environment:
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - DB_NAME=debt_db
+    restart: unless-stopped
+    volumes:
+      - ./backend:/app/backend
+
+  db:
+    image: mysql:latest
+    container_name: debt-db
+    ports:
+      - "3306:3306"  
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: debt_db
+    restart: unless-stopped
+
+  ai-agent:
+    build:
+      context: . 
+      dockerfile: Dockerfile  
+    environment:
+      - AGENT_SCRIPT_PATH=./backend/app/ai/agents/check_mail_agent.py  
+    volumes:
+      - ./backend/app/ai/agents:/app/ai/agents    
+    restart: unless-stopped
+
+  
